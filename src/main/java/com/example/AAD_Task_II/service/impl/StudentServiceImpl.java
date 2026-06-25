@@ -3,6 +3,7 @@ package com.example.AAD_Task_II.service.impl;
 import com.example.AAD_Task_II.dto.StudentDTO;
 import com.example.AAD_Task_II.entity.Section;
 import com.example.AAD_Task_II.entity.Student;
+import com.example.AAD_Task_II.enumaration.StudentStatus;
 import com.example.AAD_Task_II.repository.StudentRepository;
 import com.example.AAD_Task_II.service.StudentService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class StudentServiceImpl implements StudentService {
             Student student = new Student();
             student.setName(studentDTO.getName());
             student.setEmail(studentDTO.getEmail());
+            student.setStatus(studentDTO.getStatus() != null ? studentDTO.getStatus() : StudentStatus.ACTIVE);
             if (studentDTO.getSectionId() != null) {
                 Section section = new Section();
                 section.setSectionId(studentDTO.getSectionId());
@@ -56,6 +58,7 @@ public class StudentServiceImpl implements StudentService {
             Student student = studentOptional.get();
             student.setName(studentDTO.getName());
             student.setEmail(studentDTO.getEmail());
+            student.setStatus(studentDTO.getStatus() != null ? studentDTO.getStatus() : (student.getStatus() != null ? student.getStatus() : StudentStatus.ACTIVE));
             if (studentDTO.getSectionId() != null) {
                 Section section = new Section();
                 section.setSectionId(studentDTO.getSectionId());
@@ -79,8 +82,10 @@ public class StudentServiceImpl implements StudentService {
             if (studentOptional.isEmpty()) {
                 throw new RuntimeException("Student not found with ID: " + studentId);
             }
-            studentRepository.delete(studentOptional.get());
-            log.info("Student deleted successfully");
+            Student student = studentOptional.get();
+            student.setStatus(StudentStatus.INACTIVE);
+            studentRepository.save(student);
+            log.info("Student deleted successfully (status set to INACTIVE)");
         } catch (Exception e) {
             log.error("Error deleting student: {}", e.getMessage());
             throw e;

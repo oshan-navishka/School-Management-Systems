@@ -4,7 +4,9 @@ import com.example.AAD_Task_II.dto.BookRecodesDTO;
 import com.example.AAD_Task_II.entity.Book;
 import com.example.AAD_Task_II.entity.BookRecodes;
 import com.example.AAD_Task_II.entity.Student;
+import com.example.AAD_Task_II.enumaration.StudentStatus;
 import com.example.AAD_Task_II.repository.BookRecodeRepository;
+import com.example.AAD_Task_II.repository.StudentRepository;
 import com.example.AAD_Task_II.service.BookRecodesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,9 +19,11 @@ import java.util.Optional;
 @Slf4j
 public class BookRecodesServiceImpl implements BookRecodesService {
     private final BookRecodeRepository bookRecodeRepository;
+    private final StudentRepository studentRepository;
 
-    public BookRecodesServiceImpl(BookRecodeRepository bookRecodeRepository) {
+    public BookRecodesServiceImpl(BookRecodeRepository bookRecodeRepository, StudentRepository studentRepository) {
         this.bookRecodeRepository = bookRecodeRepository;
+        this.studentRepository = studentRepository;
     }
 
     private BookRecodesDTO toDTO(BookRecodes recode) {
@@ -38,8 +42,14 @@ public class BookRecodesServiceImpl implements BookRecodesService {
             recode.setReturnDate(recodeDTO.getReturnDate());
 
             if (recodeDTO.getStudentId() != null) {
-                Student student = new Student();
-                student.setStudentId(recodeDTO.getStudentId());
+                Optional<Student> studentOptional = studentRepository.findById(recodeDTO.getStudentId());
+                if (studentOptional.isEmpty()) {
+                    throw new RuntimeException("Student not found with ID: " + recodeDTO.getStudentId());
+                }
+                Student student = studentOptional.get();
+                if (student.getStatus() == StudentStatus.INACTIVE) {
+                    throw new RuntimeException("Cannot borrow book for inactive or deleted student");
+                }
                 recode.setStudent(student);
             }
             if (recodeDTO.getBookId() != null) {
@@ -69,8 +79,14 @@ public class BookRecodesServiceImpl implements BookRecodesService {
             recode.setReturnDate(recodeDTO.getReturnDate());
 
             if (recodeDTO.getStudentId() != null) {
-                Student student = new Student();
-                student.setStudentId(recodeDTO.getStudentId());
+                Optional<Student> studentOptional = studentRepository.findById(recodeDTO.getStudentId());
+                if (studentOptional.isEmpty()) {
+                    throw new RuntimeException("Student not found with ID: " + recodeDTO.getStudentId());
+                }
+                Student student = studentOptional.get();
+                if (student.getStatus() == StudentStatus.INACTIVE) {
+                    throw new RuntimeException("Cannot borrow/update book record for inactive or deleted student");
+                }
                 recode.setStudent(student);
             } else {
                 recode.setStudent(null);

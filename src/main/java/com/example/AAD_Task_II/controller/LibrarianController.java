@@ -58,13 +58,6 @@ public class LibrarianController {
         bookRecodesService.updateBookRecode(recodeDTO);
         return new CommonResponse(OPERATION_SUCCESS, SUCCESS_MASSAGE);
     }
-
-    @GetMapping(value = "/borrowings/{recodeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getBookRecodeById(@PathVariable Long recodeId) {
-        BookRecodesDTO recode = bookRecodesService.getBookRecodeById(recodeId);
-        return new CommonResponse(OPERATION_SUCCESS, recode, SUCCESS_MASSAGE);
-    }
-
     @DeleteMapping(value = "/borrowings/{recodeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse deleteBookRecode(@PathVariable Long recodeId) {
         bookRecodesService.deleteBookRecode(recodeId);
